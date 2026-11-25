@@ -2072,3 +2072,47 @@ button, .top-link, .pop-btn, .wk-line-btn, .tl-logo {
 
 /* number row: keep each figure on one line (e.g. 50K–100K+) */
 .wk-md .case-stats b { white-space: nowrap; font-size: clamp(24px, 2.6vw, 38px); }
+
+/* ==================================================================
+   Phone: less on screen at once (TJ: "too congested on phone")
+   ================================================================== */
+@media (max-width: 640px) {
+  /* hero: drop the decorative frame, corner marks and corner labels; the 3D head and About carry it */
+  .hero-frame, .hero-mark, .hero-meta { display: none; }
+  .about-title { font-size: clamp(32px, 10vw, 44px); }
+  .about-body { font-size: 14px; line-height: 1.4; max-width: 82vw; }
+
+  /* top buttons: lighter strip, smaller pills (still 40px tall to tap) */
+  .top-links { background: linear-gradient(rgba(10, 13, 18, 0.45), rgba(10, 13, 18, 0)); gap: 6px; }
+  .top-links .top-link { min-height: 40px; padding: 0 14px; font-size: 12px; }
+
+  /* resume cards: tighter, smaller, three bullets max */
+  .tl-body { padding: 14px 16px; border-radius: 14px; background: rgba(10, 13, 20, 0.55); }
+  .tl-period { font-size: 11px; margin-bottom: 0.4em; }
+  .tl-place { font-size: 18px; }
+  .tl-role { font-size: 13px; margin-top: 0.2em; }
+  .tl-points { margin-top: 0.7em; }
+  .tl-points li { font-size: 13px; line-height: 1.45; }
+  .tl-points li + li { margin-top: 0.35em; }
+  .tl-points li:nth-child(n + 4) { display: none; }
+  .tl-group { margin-top: 0.8em; }
+
+  /* spin line: smaller so it does not cover the whole face */
+  .spin-line { font-size: 26px; width: 80vw; }
+
+  /* works cards: less padding, no footer line, shorter intro */
+  .wk-card { padding: 40px 18px 36px; gap: 16px; }
+  .wk-card-blurb { font-size: 13px; line-height: 1.5; }
+  .wk-foot { display: none; }
+  .wk-card-cover { border-radius: 10px; }
+
+  /* case pages */
+  .wk-md .case-stats { grid-template-columns: 1fr; margin: 1.2em 0 1.6em; }
+  .wk-md .case-stats > div { flex-direction: row; align-items: baseline; gap: 14px; padding: 12px 16px; }
+  .wk-md .case-stats b { font-size: 26px; min-width: 7.5ch; }
+  .wk-md .case-stats span { font-size: 13px; }
+
+  /* one resume card on screen at a time: push the next and previous cards further apart */
+  .tl-entry { padding-bottom: 78vh; }
+  .tl-entry:last-child { padding-bottom: 38vh; }
+}

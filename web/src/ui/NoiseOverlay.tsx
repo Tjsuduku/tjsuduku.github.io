@@ -119,7 +119,7 @@ export default function NoiseOverlay() {
       }}
     >
       <Canvas
-        style={{ width: '100%', height: '100%', opacity: CONFIG.opacity, pointerEvents: 'none' }}
+        style={{ width: '100%', height: '100%', opacity: typeof window !== 'undefined' && window.innerWidth <= 640 ? 0.22 : CONFIG.opacity, pointerEvents: 'none' }}
         frameloop="demand"
         camera={{ position: [0, 0, 1] }}
         gl={{ alpha: true, antialias: false, powerPreference: 'high-performance' }}
