@@ -18,6 +18,7 @@ const FPS = 24 // 所有 clip @24fps 共享时间轴；相机动画总帧数运�
 // Same breakpoint as the phone CSS (max-width 640px), read live so rotating a phone or resizing a window just works.
 const isPhoneLayout = () => typeof window !== 'undefined' && window.innerWidth <= 640
 const hasMouse = () => typeof window !== 'undefined' && window.matchMedia?.('(hover: hover) and (pointer: fine)').matches === true
+const PHONE_LOCAL = new THREE.Vector3()
 const nodeLine = () => (isPhoneLayout() ? 0.5 : 0.3) // 节点"终点"参考线：条目顶部到达视口该高度(从上 30%)时锁定为该节点
 
 // 上下渐变背景球（包裹相机），两端颜色可调
@@ -134,8 +135,9 @@ function Man2({
     parallax: 4,
     parallaxEase: 0.1,
     mobilePullback: 1.2,
-    mobileTimelineShift: 0.14, // cancels the sideways offset baked into the camera path
-    mobileTimelineShiftY: 0.06, // lifts the face into the top half so the text card does not cover stickers
+    mobileTimelineShift: 1, // phones: 1 = put the focused sticker group in the middle of the screen (0 = off)
+    mobileFocusY: 0.27, // phones: where the focused stickers sit, from the top of the screen (0 top, 1 bottom)
+    mobileCloseupPullback: 1.6, // phones: extra pull-back on close-ups only (up to 1.2 + 1.6 = 2.8x), so the face is smaller
   }
 
   const eye = {
@@ -467,24 +469,32 @@ function Man2({
         .sub(focusRef.current)
         .applyQuaternion(paraQuat.current)
       // 移动端沿「焦点→相机」方向整体拉远：焦点屏幕位置不变，主体更小、留白更多
-      if (isMobile.current) tmpVec.current.multiplyScalar(cam.mobilePullback)
+      if (isMobile.current) {
+        // close-ups (camera about 1 unit from the sticker) get pulled back much more than wide shots (about 4 units)
+        const d0 = tmpVec.current.length()
+        const pull = cam.mobilePullback + cam.mobileCloseupPullback * THREE.MathUtils.clamp((4 - d0) / 2.5, 0, 1)
+        tmpVec.current.multiplyScalar(pull)
+      }
       tmpVec.current.add(focusRef.current)
       camera.position.copy(tmpVec.current)
       camera.quaternion.multiplyQuaternions(paraQuat.current, camQuat.current)
-      // 移动端「时间轴阶段」把镜头整体左移，让主体从满宽文字后错开。
-      // 权重：从 Hero 渐入(s: -0.8→0.3)、进入作品区随 smoothOff 渐出 → 无跳变。
-      if (isMobile.current && cam.mobileTimelineShift !== 0) {
-        const tlWeight = THREE.MathUtils.smoothstep(s, -0.8, 0.3) * (1 - smoothOff)
-        if (tlWeight > 0) {
-          // translateX 沿局部 +X（屏幕右）；取负 → 相机左移
-          const dist = camera.position.distanceTo(focusRef.current)
-          camera.translateX(-dist * cam.mobileTimelineShift * tlWeight)
-          camera.translateY(-dist * cam.mobileTimelineShiftY * tlWeight)
-        }
-      }
       if (camera.fov !== glbCam.fov) {
         camera.fov = glbCam.fov
         camera.updateProjectionMatrix()
+      }
+      // Phones: slide the picture (not the camera, so no perspective change) so the focused sticker group
+      // sits centred, in the top quarter of the screen, above the text card. Fades in from the hero and out into Works.
+      const tlWeight = isMobile.current
+        ? THREE.MathUtils.smoothstep(s, -0.8, 0.3) * (1 - smoothOff) * cam.mobileTimelineShift
+        : 0
+      if (camera.view && camera.view.enabled) camera.clearViewOffset()
+      if (tlWeight > 0.001) {
+        camera.updateMatrixWorld()
+        PHONE_LOCAL.copy(focusRef.current).project(camera)
+        const { width: W, height: H } = get().size
+        const offX = (PHONE_LOCAL.x * W) / 2
+        const offY = ((1 - PHONE_LOCAL.y) / 2 - cam.mobileFocusY) * H
+        camera.setViewOffset(W, H, offX * tlWeight, offY * tlWeight, W, H)
       }
     }
 
