@@ -1,5 +1,6 @@
-import { Suspense, useRef, useState } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
+import { PerformanceMonitor } from '@react-three/drei'
 import { motion, useScroll, useTransform, type MotionValue } from 'framer-motion'
 import * as THREE from 'three'
 import Scene from './scene/Scene'
@@ -120,7 +121,28 @@ function Closing() {
   )
 }
 
+// Sharp on every screen without melting phones: use the device pixel ratio (up to 2),
+// but keep the rendered pixel count under a budget (about 4K on desktop, less on phones).
+function pickDpr() {
+  if (typeof window === 'undefined') return 1
+  const coarse = window.matchMedia?.('(pointer: coarse)').matches
+  const budget = coarse ? 3.2e6 : 8.3e6
+  const fit = Math.sqrt(budget / Math.max(1, window.innerWidth * window.innerHeight))
+  return Math.max(1, Math.min(window.devicePixelRatio || 1, 2, fit))
+}
+
 export default function App() {
+  const [maxDpr, setMaxDpr] = useState(pickDpr)
+  const [dpr, setDpr] = useState(pickDpr)
+  useEffect(() => {
+    const on = () => {
+      const m = pickDpr()
+      setMaxDpr(m)
+      setDpr((d) => Math.min(d, m))
+    }
+    window.addEventListener('resize', on)
+    return () => window.removeEventListener('resize', on)
+  }, [])
   const [lang] = useState<Lang>('en')
   const { scrollY } = useScroll()
   // 作品区蒙层：以作品区顶部从视口底进入到视口中部的进度，驱动 3D 渐暗 + 模糊
@@ -156,11 +178,17 @@ export default function App() {
       <div className="scene-bg">
         <Canvas
           shadows={{ type: THREE.PCFShadowMap }}
-          dpr={window.matchMedia?.('(pointer: coarse)').matches ? [1, 1.25] : [1, 1.5]}
+          dpr={dpr}
           camera={{ position: [0, 5, 19], fov: 39, near: 0.1, far: 500 }}
           gl={{ antialias: false, stencil: false, depth: true, toneMapping: THREE.ACESFilmicToneMapping }}
         >
           <color attach="background" args={['#0a0e16']} />
+          {/* drops resolution a step if the device cannot keep up, raises it again when it can */}
+          <PerformanceMonitor
+            flipflops={3}
+            onDecline={() => setDpr((d) => Math.max(1, Math.round((d - 0.25) * 4) / 4))}
+            onIncline={() => setDpr((d) => Math.min(maxDpr, Math.round((d + 0.25) * 4) / 4))}
+          />
           <Suspense fallback={null}>
             <Backdrop />
             <Scene />

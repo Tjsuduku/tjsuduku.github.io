@@ -15,10 +15,10 @@ const RESUME_FRAMES = M * FRAMES_PER_NODE // 履历区帧数：每节点 FRAMES_
 const WORKS_ENTRANCE = 50 // 作品区"入场"（画廊屏幕从底部滑入覆盖）占的帧数
 const FPS = 24 // 所有 clip @24fps 共享时间轴；相机动画总帧数运行时从 CameraAction clip 读（见 totalFrames）
 // Phones: the text card sits in the lower half, so the timeline reference line moves down and the face stays in the top half.
-const IS_PHONE =
-  typeof window !== 'undefined' &&
-  (window.matchMedia?.('(pointer: coarse)').matches === true || window.innerWidth <= 640)
-const NODE_LINE = IS_PHONE ? 0.5 : 0.3 // 节点"终点"参考线：条目顶部到达视口该高度(从上 30%)时锁定为该节点
+// Same breakpoint as the phone CSS (max-width 640px), read live so rotating a phone or resizing a window just works.
+const isPhoneLayout = () => typeof window !== 'undefined' && window.innerWidth <= 640
+const hasMouse = () => typeof window !== 'undefined' && window.matchMedia?.('(hover: hover) and (pointer: fine)').matches === true
+const nodeLine = () => (isPhoneLayout() ? 0.5 : 0.3) // 节点"终点"参考线：条目顶部到达视口该高度(从上 30%)时锁定为该节点
 
 // 上下渐变背景球（包裹相机），两端颜色可调
 function GradientBackground() {
@@ -274,11 +274,17 @@ function Man2({
 
   // 移动端 / 触屏（无鼠标可跟随）：关闭眼睛跟随，眼睛保持默认朝向。
   // 判定 = 触屏指针 或 窄视口（≤640px，与移动端样式断点一致）。
-  const isMobile = useRef(
-    typeof window !== 'undefined' &&
-      (window.matchMedia?.('(pointer: coarse)').matches === true ||
-        window.innerWidth <= 640)
-  )
+  // phone layout (camera pull-back and lift) follows the 640px breakpoint; eye follow needs a mouse
+  const isMobile = useRef(isPhoneLayout())
+  const noMouse = useRef(!hasMouse())
+  useEffect(() => {
+    const on = () => {
+      isMobile.current = isPhoneLayout()
+      noMouse.current = !hasMouse()
+    }
+    window.addEventListener('resize', on)
+    return () => window.removeEventListener('resize', on)
+  }, [])
 
   // 履历锚点 DOM 元素（决定当前播放到第几段）
   const anchorEls = useRef<any>(null)
@@ -325,11 +331,11 @@ function Man2({
     let sTarget = THREE.MathUtils.clamp(frameSmooth.current / FRAMES_PER_NODE - 1, -1, M - 1)
     if (els && els.length === M && els.every(Boolean)) {
       // 参考线在视口 NODE_LINE 高度；锚点用条目顶部（文字位置，不含底部大 padding）
-      const refLine = window.scrollY + window.innerHeight * NODE_LINE
+      const refLine = window.scrollY + window.innerHeight * nodeLine()
       const tops = els.map((el: any) => el.getBoundingClientRect().top + window.scrollY)
       if (refLine <= tops[0]) {
         // 顶部 → sysu 的渐入段：scrollY=0 时 s=-1（第 0 帧），sysu 到达参考线时 s=0
-        const heroScroll = Math.max(1, tops[0] - window.innerHeight * NODE_LINE)
+        const heroScroll = Math.max(1, tops[0] - window.innerHeight * nodeLine())
         sTarget = -1 + dwell(THREE.MathUtils.clamp(window.scrollY / heroScroll, 0, 1))
       } else if (refLine >= tops[M - 1]) {
         sTarget = M - 1
@@ -389,7 +395,13 @@ function Man2({
     if (!spinEl.current) spinEl.current = document.getElementById('spin-line')
     if (spinEl.current) {
       const p = THREE.MathUtils.clamp((frame - RESUME_FRAMES) / 90, 0, 1)
-      spinEl.current.style.opacity = String(Math.sin(Math.PI * p) ** 0.6)
+      let o = Math.sin(Math.PI * p) ** 0.6
+      // phones stack the Works cards instead of pinning them, so fade the line out as the cards scroll up
+      if (isMobile.current && galleryEl.current) {
+        const top = galleryEl.current.getBoundingClientRect().top
+        o *= THREE.MathUtils.clamp((top - window.innerHeight * 0.2) / (window.innerHeight * 0.4), 0, 1)
+      }
+      spinEl.current.style.opacity = String(o)
     }
 
     // 履历段用于对焦的连续索引：由平滑后的帧反推，确保对焦与镜头同步
@@ -477,7 +489,7 @@ function Man2({
     }
 
     // 4) 眼睛跟随（用当前激活相机做屏幕投影）；移动端 / 触屏则跳过
-    if (!eye.enabled || eyes.length === 0 || isMobile.current) return
+    if (!eye.enabled || eyes.length === 0 || noMouse.current) return
     const sx = eye.invertX ? -1 : 1
     const sy = eye.invertY ? -1 : 1
 

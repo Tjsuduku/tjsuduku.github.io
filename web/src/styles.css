@@ -14,6 +14,9 @@
 
 html {
   scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
   /* 禁用触底/触顶橡皮筋回弹：必须落在根滚动元素 html 上才在各浏览器可靠生效 */
   overscroll-behavior: none;
 }
@@ -90,6 +93,7 @@ canvas {
 /* ---------- 首屏 ---------- */
 .hero {
   min-height: 100vh;
+  min-height: 100svh;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -303,11 +307,11 @@ canvas {
   text-decoration: none;
   border-bottom: 1px solid rgba(244, 241, 234, 0.45);
   transition: color 0.2s ease, border-color 0.2s ease;
-}
-
+}@media (hover: hover) and (pointer: fine) {
 .about-link:hover {
   color: #ffd9b3;
   border-bottom-color: #ffd9b3;
+}
 }
 
 /* 中文正文：拉丁衬线字体不含汉字，切到系统中文字体并放大行距 */
@@ -338,12 +342,12 @@ canvas {
   cursor: pointer;
   backdrop-filter: blur(10px);
   transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
-}
-
+}@media (hover: hover) and (pointer: fine) {
 .lang-toggle:hover {
   color: var(--ink);
   background: rgba(20, 26, 38, 0.92);
   border-color: rgba(244, 241, 234, 0.3);
+}
 }
 
 /* ---------- 履历时间轴 ---------- */
@@ -537,13 +541,13 @@ canvas {
 .tl-logo svg {
   width: 20px;
   height: 20px;
-}
-
+}@media (hover: hover) and (pointer: fine) {
 .tl-logo:hover {
   color: var(--ink);
   border-color: rgba(244, 241, 234, 0.4);
   background: rgba(244, 241, 234, 0.06);
   transform: translateY(-2px);
+}
 }
 
 /* ZOOOP 动态 logo */
@@ -552,10 +556,10 @@ canvas {
   display: inline-flex;
   color: var(--ink);
   transition: color 0.2s ease;
-}
-
+}@media (hover: hover) and (pointer: fine) {
 .zooop-logo-link:hover {
   color: #ffd9b3;
+}
 }
 
 .zooop-logo {
@@ -682,9 +686,10 @@ canvas {
   font-size: 18px;
   cursor: pointer;
   transition: background 0.2s;
-}
+}@media (hover: hover) and (pointer: fine) {
 .detail .close:hover {
   background: rgba(255, 255, 255, 0.08);
+}
 }
 
 .detail .dot {
@@ -720,10 +725,11 @@ canvas {
   padding: 16px 18px;
   transition: border-color 0.2s, transform 0.2s, background 0.2s;
   cursor: default;
-}
+}@media (hover: hover) and (pointer: fine) {
 .work:hover {
   background: rgba(255, 255, 255, 0.04);
   transform: translateX(-4px);
+}
 }
 .work .work-top {
   display: flex;
@@ -1034,11 +1040,12 @@ canvas {
   font-family: inherit;
   cursor: pointer;
   transition: padding-left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
+}@media (hover: hover) and (pointer: fine) {
 .wk-line-btn:hover,
 .wk-line-btn:focus-visible {
   padding-left: 10px;
   outline: none;
+}
 }
 
 .wk-line-name {
@@ -1048,10 +1055,11 @@ canvas {
   letter-spacing: 0.01em;
   color: rgba(244, 241, 234, 0.9);
   transition: color 0.2s ease;
-}
+}@media (hover: hover) and (pointer: fine) {
 .wk-line-btn:hover .wk-line-name,
 .wk-line-btn:focus-visible .wk-line-name {
   color: #ffd9b3;
+}
 }
 
 /* 右侧数据：播放量(暖色) + 标签(弱化)，以 · 连排 */
@@ -1169,10 +1177,11 @@ canvas {
   border-radius: 999px;
   border: 2px solid transparent;
   background-clip: padding-box;
-}
+}@media (hover: hover) and (pointer: fine) {
 .wk-detail::-webkit-scrollbar-thumb:hover {
   background: rgba(244, 241, 234, 0.28);
   background-clip: padding-box;
+}
 }
 
 .wk-detail-close {
@@ -1191,11 +1200,12 @@ canvas {
   font-size: 15px;
   cursor: pointer;
   transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
-}
+}@media (hover: hover) and (pointer: fine) {
 .wk-detail-close:hover {
   background: rgba(20, 26, 38, 0.8);
   border-color: rgba(244, 241, 234, 0.3);
   transform: rotate(90deg);
+}
 }
 
 /* 顶部 banner：图铺满；缺省时低饱和墨绿渐变占位 + 虚字 */
@@ -1299,9 +1309,10 @@ canvas {
   color: #ffd9b3;
   text-decoration: none;
   border-bottom: 1px solid rgba(255, 217, 179, 0.4);
-}
+}@media (hover: hover) and (pointer: fine) {
 .wk-md a:hover {
   border-bottom-color: #ffd9b3;
+}
 }
 .wk-md ul,
 .wk-md ol {
@@ -1354,10 +1365,11 @@ canvas {
   text-decoration: none;
   white-space: nowrap;
   transition: background 0.2s ease, gap 0.2s ease;
-}
+}@media (hover: hover) and (pointer: fine) {
 .wk-detail-link:hover {
   background: rgba(255, 217, 179, 0.1);
   gap: 0.9em;
+}
 }
 
 /* 详情占位组件：开源版无 md 内容时，演示详情页支持的「图片/视频 + 跳转按钮」等组件 */
@@ -1388,10 +1400,11 @@ canvas {
   border-color: var(--line);
   border-style: dashed;
   cursor: default;
-}
+}@media (hover: hover) and (pointer: fine) {
 .wk-detail-link.is-ph:hover {
   background: none;
   gap: 0.6em;
+}
 }
 
 /* ---------- 加载遮罩：模型全部加载完成前覆盖全屏（进度环，无文字）---------- */
@@ -1770,6 +1783,7 @@ canvas {
   position: relative;
   width: min(560px, 100%);
   max-height: calc(100vh - 40px);
+  max-height: calc(100dvh - 40px);
   overflow: auto;
   padding: 40px 36px 34px;
   border-radius: 20px;
@@ -1861,9 +1875,10 @@ canvas {
   font-weight: 500;
   text-decoration: none;
   cursor: pointer;
-}
+}@media (hover: hover) and (pointer: fine) {
 .pop-btn:hover {
   border-color: rgba(244, 241, 234, 0.45);
+}
 }
 .pop-btn.primary {
   border-color: #ffd9b3;
@@ -1979,5 +1994,78 @@ canvas {
   }
   .cv-job-head em {
     margin-left: 0;
+  }
+}
+
+
+/* ---------- Every screen: touch, notch, motion ---------- */
+button, a, [role='button'] {
+  touch-action: manipulation;
+}
+button, .top-link, .pop-btn, .wk-line-btn, .tl-logo {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+/* press feedback that works on touch, where hover does not exist */
+.top-link:active, .pop-btn:active, .wk-line-btn:active, .pop-close:active, .tl-logo:active {
+  transform: scale(0.97);
+  transition: transform 100ms ease-out;
+}
+/* keep buttons clear of the notch, Dynamic Island and rounded corners */
+.top-links {
+  top: calc(16px + env(safe-area-inset-top, 0px));
+  right: calc(18px + env(safe-area-inset-right, 0px));
+}
+@media (max-width: 640px) {
+  .top-links {
+    top: 0;
+    right: 0;
+    padding-top: calc(10px + env(safe-area-inset-top, 0px));
+    padding-right: calc(12px + env(safe-area-inset-right, 0px));
+  }
+}
+.closing {
+  padding-bottom: calc(22vh + env(safe-area-inset-bottom, 0px));
+}
+.pop-backdrop {
+  padding: max(20px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px))
+    max(20px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+}
+.pop-card, .wk-detail {
+  overscroll-behavior: contain;
+}
+/* very small phones (Galaxy Fold folded, iPhone SE 1st gen) */
+@media (max-width: 360px) {
+  .top-links .top-link { padding: 0 12px; font-size: 11px; }
+  .pop-title { font-size: 38px; }
+  .about-body { font-size: 14px; }
+}
+/* very large, 4K and ultrawide screens: scale the text panels up so they don't look tiny next to the 3D head */
+@media (min-width: 2200px) and (min-height: 1300px) {
+  .timeline, .resume-title, .top-links, .closing, .pop-card { zoom: 1.4; }
+  .about-title { font-size: 112px; }
+  .about-body { font-size: 21px; max-width: 900px; }
+  .wk-card-blurb { font-size: 17px; }
+}
+@media (min-width: 3200px) and (min-height: 1900px) {
+  .timeline, .resume-title, .top-links, .closing, .pop-card { zoom: 1.8; }
+  .about-title { font-size: 150px; }
+  .about-body { font-size: 28px; max-width: 1200px; }
+}
+/* phones held sideways and other short screens: keep the hero text small enough to sit under the face */
+@media (max-height: 520px) and (orientation: landscape) {
+  .about-title { font-size: 30px; }
+  .about-body { font-size: 12px; line-height: 1.3; max-width: 62vw; }
+  .hero { padding-bottom: 3vh; }
+  .scroll-cue { display: none; }
+}
+/* people who ask their device for less motion */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

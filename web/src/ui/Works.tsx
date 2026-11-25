@@ -25,7 +25,7 @@ function MdImage({ src, alt }: { src?: string; alt?: string }) {
       </span>
     )
   }
-  return <img src={url} alt={alt || ''} loading="lazy" onError={() => setFailed(true)} />
+  return <img src={url} alt={alt || ''} loading="lazy" decoding="async" onError={() => setFailed(true)} />
 }
 
 const EASE = [0.22, 1, 0.36, 1]
@@ -75,7 +75,7 @@ function SectionCard({
       {section.blurb && <p className="wk-card-blurb">{section.blurb}</p>}
       <div className="wk-card-cover">
         {cover && !coverError ? (
-          <img src={cover} alt="" onError={() => setCoverError(true)} />
+          <img src={cover} alt="" loading="lazy" decoding="async" onError={() => setCoverError(true)} />
         ) : (
           <div className="wk-card-cover-ph" aria-hidden="true">
             <span className="wk-card-cover-no">{section.no}</span>
@@ -178,7 +178,7 @@ function WorkDetail({
 
         {banner && !bannerError ? (
           <div className="wk-detail-banner">
-            <img src={banner} alt={title} onError={() => setBannerError(true)} />
+            <img src={banner} alt={title} decoding="async" onError={() => setBannerError(true)} />
           </div>
         ) : (
           <div className="wk-detail-banner is-ph" aria-hidden="true">
