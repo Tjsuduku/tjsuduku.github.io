@@ -2069,3 +2069,6 @@ button, .top-link, .pop-btn, .wk-line-btn, .tl-logo {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* number row: keep each figure on one line (e.g. 50K–100K+) */
+.wk-md .case-stats b { white-space: nowrap; font-size: clamp(24px, 2.6vw, 38px); }
