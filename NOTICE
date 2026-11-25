@@ -1,0 +1,5 @@
+Code: MIT License, copyright (c) 2026 Sen Zheng (SEN). See LICENSE. Original project: https://github.com/dayinji/sen-3d-resume
+
+Personal content (name, résumé, work descriptions, images, 3D model) in this repository is copyright (c) 2026 Mohammed Tahmid Jalal and is not covered by the MIT license.
+
+Third-party assets: fonts in web/public/fonts (Cormorant Upright, Mansalva) are under the SIL Open Font License. Lighting environment web/public/textures/env.hdr is kloppenheim_06_puresky from Poly Haven (https://polyhaven.com/a/kloppenheim_06_puresky), CC0 public domain. Brand logos in source/logos and in the stickers are trademarks of their owners, used only to identify where TJ worked or which tools TJ uses; no endorsement is implied. The camera path in tools/character/camera_path.py is original work.

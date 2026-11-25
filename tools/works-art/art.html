@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Works art</title>
+<!--
+  Works covers and case banners, drawn in HTML and CSS from real logos, real numbers and brand colours.
+  No AI images. Open art.html#events (any id from DESIGNS below) in a browser to preview one.
+  Render all to JPG:  node tools/works-art/render.js
+-->
+<style>
+@font-face { font-family: 'Inter'; src: url(fonts/inter-latin.woff2) format('woff2'); font-weight: 100 900; }
+@font-face { font-family: 'Cormorant'; src: url(fonts/cormorant-upright-600.woff2) format('woff2'); font-weight: 600; }
+@font-face { font-family: 'Cormorant'; src: url(fonts/cormorant-upright-500.woff2) format('woff2'); font-weight: 500; }
+@font-face { font-family: 'Mansalva'; src: url(fonts/mansalva-400.woff2) format('woff2'); }
+:root {
+  --ink: #15191c; --ink2: #1f2427; --cream: #f4f1ea; --peach: #ffd9b3; --sage: #6f906f; --sand: #dbd3b5;
+  --mute: rgba(244, 241, 234, 0.55); --line: rgba(244, 241, 234, 0.16);
+  --f1: #e4007c; --f2: #0093d0; --f3: #00a54f; --f4: #8cc63f; --f5: #ffe600; --f6: #f7931e; --f7: #ec1c24;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; background: var(--ink); overflow: hidden; }
+body { font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; color: var(--cream); -webkit-font-smoothing: antialiased; }
+#art { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+.abs { position: absolute; }
+.center { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+.serif { font-family: 'Cormorant', serif; font-weight: 600; letter-spacing: -0.01em; font-feature-settings: 'lnum' 1; font-variant-numeric: lining-nums; white-space: nowrap; }
+.hand { font-family: 'Mansalva', cursive; }
+.kicker { font-size: 1.15vw; letter-spacing: 0.32em; text-transform: uppercase; color: var(--mute); font-weight: 500; }
+.big { line-height: 0.86; }
+.chip { display: inline-flex; align-items: center; gap: .5em; padding: .55em 1.05em; border: 1px solid var(--line); border-radius: 999px; font-size: 1.05vw; color: var(--cream); background: rgba(255,255,255,0.03); }
+.grain::after { content: ''; position: absolute; inset: 0; pointer-events: none; opacity: .09; mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>"); }
+.vignette::before { content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 5;
+  background: radial-gradient(120% 90% at 50% 50%, transparent 55%, rgba(0,0,0,.45)); }
+.logo { object-fit: contain; display: block; }
+.card { background: var(--ink2); border: 1px solid var(--line); border-radius: 1.4vw; }
+.star { color: var(--peach); letter-spacing: .08em; }
+</style>
+</head>
+<body>
+<div id="art" class="grain vignette"></div>
+<script>
+const L = (n) => `../../source/logos/${n}.png`
+const FAN = ['var(--f1)', 'var(--f2)', 'var(--f3)', 'var(--f4)', 'var(--f5)', 'var(--f6)', 'var(--f7)']
+
+// Cloverdale-style colour fan: blades rotating out from a pivot
+function fan({ x, y, len, width, from = -8, step = 11, op = 1 }) {
+  return FAN.map((c, i) => `<div class="abs" style="left:${x}px;top:${y}px;width:${len}px;height:${width}px;background:${c};opacity:${op};
+    transform-origin:0 50%;transform:rotate(${from - i * step}deg);border-radius:0 ${width / 2}px ${width / 2}px 0;
+    box-shadow:0 6px 30px rgba(0,0,0,.35)"></div>`).join('')
+}
+function calendar({ x, y, cell, gap, done = 30, start = 0, label = true }) {
+  let h = ''
+  for (let i = 0; i < 35; i++) {
+    const d = i - start + 1
+    if (d < 1 || d > 30) continue
+    const r = Math.floor(i / 7), c = i % 7
+    const on = d <= done
+    h += `<div class="abs" style="left:${x + c * (cell + gap)}px;top:${y + r * (cell + gap)}px;width:${cell}px;height:${cell}px;border-radius:${cell * 0.16}px;
+      background:${on ? 'var(--f7)' : 'transparent'};border:1px solid ${on ? 'transparent' : 'var(--line)'};
+      display:flex;align-items:flex-end;justify-content:flex-start;padding:${cell * 0.1}px;font:600 ${cell * 0.26}px Inter;color:${on ? '#fff' : 'var(--mute)'}">${label ? d : ''}</div>`
+  }
+  return h
+}
+function swatches({ x, y, w, h, cols, rows, seed = 1 }) {
+  let s = '', k = seed
+  const rnd = () => (k = (k * 9301 + 49297) % 233280) / 233280
+  const cw = w / cols, ch = h / rows
+  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+    const hue = (c / cols) * 360 + rnd() * 18, sat = 25 + rnd() * 45, lig = 30 + (r / rows) * 50 + rnd() * 8
+    s += `<div class="abs" style="left:${x + c * cw}px;top:${y + r * ch}px;width:${cw - 2}px;height:${ch - 2}px;background:hsl(${hue},${sat}%,${lig}%)"></div>`
+  }
+  return s
+}
+function phone({ x, y, w, inner, rot = 0 }) {
+  const h = w * 2.05
+  return `<div class="abs" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px;border-radius:${w * 0.14}px;background:#0d0f11;
+    border:${w * 0.025}px solid #2b3135;box-shadow:0 30px 80px rgba(0,0,0,.5);transform:rotate(${rot}deg);overflow:hidden">${inner}</div>`
+}
+function pin({ x, y, r, c = 'var(--peach)' }) {
+  return `<div class="abs" style="left:${x - r}px;top:${y - r}px;width:${2 * r}px;height:${2 * r}px;border-radius:50%;border:2px solid ${c};background:${c}22"></div>
+    <div class="abs" style="left:${x - 7}px;top:${y - 7}px;width:14px;height:14px;border-radius:50%;background:${c};box-shadow:0 0 0 6px ${c}33"></div>`
+}
+function mapGrid(W, H) {
+  let s = `<div class="abs" style="inset:0;background:
+    linear-gradient(var(--line) 1px, transparent 1px) 0 0/80px 80px,
+    linear-gradient(90deg, var(--line) 1px, transparent 1px) 0 0/80px 80px;opacity:.5"></div>`
+  // a few "roads"
+  s += `<div class="abs" style="left:-10%;top:58%;width:130%;height:6px;background:rgba(244,241,234,.12);transform:rotate(-9deg)"></div>
+        <div class="abs" style="left:30%;top:-10%;width:6px;height:130%;background:rgba(244,241,234,.1);transform:rotate(14deg)"></div>
+        <div class="abs" style="left:-10%;top:28%;width:130%;height:3px;background:rgba(244,241,234,.08);transform:rotate(6deg)"></div>`
+  return s
+}
+
+// ---------- designs: id -> { w, h, html } ----------
+const DESIGNS = {
+  // ===== section covers (1500 x 1000) =====
+  'cover-events': { w: 1500, h: 1000, out: 'covers/events.jpg', html: () => `
+    <div class="abs" style="inset:0;background:radial-gradient(90% 80% at 15% 85%, #2a2f33, var(--ink))"></div>
+    ${fan({ x: 110, y: 880, len: 640, width: 96, from: -18, step: 11 })}
+    <div class="abs" style="right:90px;top:90px;text-align:right">
+      <div class="kicker" style="font-size:20px">Colour of the Year 2027</div>
+      <div class="serif big" style="font-size:300px;margin-top:20px">2,500+</div>
+      <div style="font-size:30px;color:var(--mute);margin-top:18px">attendees · Vancouver + Toronto</div>
+    </div>` },
+  'cover-campaigns': { w: 1500, h: 1000, html: () => `
+    <div class="abs" style="inset:0;background:linear-gradient(160deg,#1b1f22,#121517)"></div>
+    ${calendar({ x: 760, y: 190, cell: 92, gap: 14, start: 0 })}
+    <div class="abs" style="left:100px;top:150px;width:600px">
+      <div class="kicker" style="font-size:20px">Buy Canadian</div>
+      <div class="serif" style="font-size:118px;line-height:.95;margin-top:28px">Canadian<br/>by Canadian</div>
+      <div class="hand" style="font-size:58px;color:var(--f7);margin-top:40px;transform:rotate(-3deg)">+ 30 Days of Made in Canada</div>
+      <div style="font-size:26px;color:var(--mute);margin-top:44px;line-height:1.4">30 Canadian businesses featured,<br/>one a day, across web and social.</div>
+    </div>`, out: 'covers/campaigns.jpg' },
+  'cover-social': { w: 1500, h: 1000, out: 'covers/social.jpg', html: () => `
+    <div class="abs" style="inset:0;background:radial-gradient(70% 90% at 80% 30%, #3a2a3c, var(--ink) 70%)"></div>
+    ${phone({ x: 860, y: 120, w: 360, rot: 6, inner: `
+      <div style="position:absolute;inset:0;background:linear-gradient(170deg,#feda75,#fa7e1e 25%,#d62976 55%,#962fbf 80%,#4f5bd5)"></div>
+      <div style="position:absolute;left:28px;right:28px;top:60px;display:grid;grid-template-columns:repeat(3,1fr);gap:6px">${Array.from({length:12}).map(()=>'<div style="aspect-ratio:1;background:rgba(255,255,255,.28);border-radius:4px"></div>').join('')}</div>
+      <div style="position:absolute;left:0;right:0;bottom:40px;text-align:center;font:700 26px Inter;color:#fff">reels · carousels · memes</div>` })}
+    <img class="abs logo" src="${L('instagram')}" style="left:760px;top:690px;width:120px;transform:rotate(-8deg)"/>
+    <img class="abs logo" src="${L('facebook')}" style="left:1260px;top:110px;width:110px;transform:rotate(10deg)"/>
+    <img class="abs logo" src="${L('linkedin')}" style="left:1270px;top:720px;width:96px;transform:rotate(-6deg)"/>
+    <img class="abs logo" src="${L('tiktok')}" style="left:720px;top:140px;width:84px;transform:rotate(-12deg)"/>
+    <div class="abs" style="left:100px;top:170px;width:560px">
+      <div class="kicker" style="font-size:20px">Organic social</div>
+      <div class="serif big" style="font-size:250px;margin-top:20px">348%</div>
+      <div style="font-size:30px;color:var(--mute);margin-top:50px;line-height:1.4">Instagram and Facebook growth.<br/>Top posts 50,000 to 100,000+ views.</div>
+    </div>` },
+  'cover-paid': { w: 1500, h: 1000, out: 'covers/paid.jpg', html: () => `
+    <div class="abs" style="inset:0;background:#111518"></div>${mapGrid()}
+    ${pin({ x: 980, y: 380, r: 190 })}${pin({ x: 1260, y: 640, r: 120, c: 'var(--f2)' })}${pin({ x: 760, y: 720, r: 90, c: 'var(--f4)' })}
+    <div class="abs" style="left:100px;top:140px;width:620px">
+      <div class="kicker" style="font-size:20px">Meta Ads · geofencing</div>
+      <div class="serif" style="font-size:132px;line-height:.95;margin-top:26px">Dealer<br/>campaigns</div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:40px">
+        <span class="chip" style="font-size:24px">Location</span><span class="chip" style="font-size:24px">Age</span><span class="chip" style="font-size:24px">Job title</span>
+      </div>
+      <div style="font-size:28px;color:var(--mute);margin-top:36px">Budgets around $2,000 · CPC and CPM tuned</div>
+    </div>` },
+  'cover-reputation': { w: 1500, h: 1000, out: 'covers/reputation.jpg', html: () => `
+    <div class="abs" style="inset:0;background:linear-gradient(180deg,#1a1e21,#121517)"></div>
+    ${[0, 1, 2, 3, 4].map(i => `<div class="abs card" style="left:${780 + (i % 2) * 40}px;top:${110 + i * 160}px;width:580px;height:130px;padding:26px 30px;opacity:${1 - i * 0.12}">
+      <div class="star" style="font-size:30px">${'★'.repeat(5 - (i === 2 ? 4 : 0))}${i === 2 ? '<span style="color:var(--mute)">☆☆☆☆</span>' : ''}</div>
+      <div style="height:12px;width:${360 - i * 30}px;background:var(--line);border-radius:6px;margin-top:18px"></div>
+      <div style="height:12px;width:${240 + i * 20}px;background:var(--line);border-radius:6px;margin-top:12px"></div></div>`).join('')}
+    <div class="abs" style="left:100px;top:170px;width:600px">
+      <div class="kicker" style="font-size:20px">Google Business Profile</div>
+      <div class="serif big" style="font-size:190px;margin-top:30px">80–150</div>
+      <div style="font-size:32px;color:var(--mute);margin-top:30px;line-height:1.4">reviews answered every week<br/>across 82 store locations</div>
+    </div>` },
+  'cover-web': { w: 1500, h: 1000, out: 'covers/web.jpg', html: () => `
+    <div class="abs" style="inset:0;background:radial-gradient(80% 80% at 80% 50%, #22302a, var(--ink) 70%)"></div>
+    <div class="abs card" style="left:720px;top:150px;width:680px;height:700px;overflow:hidden">
+      <div style="height:54px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;padding:0 22px">
+        <span style="width:14px;height:14px;border-radius:50%;background:#ec6a5e"></span><span style="width:14px;height:14px;border-radius:50%;background:#f4bf4f"></span><span style="width:14px;height:14px;border-radius:50%;background:#61c554"></span>
+        <span style="margin-left:18px;height:26px;flex:1;border-radius:13px;background:rgba(244,241,234,.07)"></span></div>
+      <div style="padding:30px">
+        <div style="height:190px;border-radius:14px;background:linear-gradient(90deg,var(--f1),var(--f2),var(--f3),var(--f5),var(--f6),var(--f7));opacity:.85"></div>
+        ${[0, 1, 2].map(i => `<div style="display:flex;gap:20px;margin-top:26px"><div style="width:130px;height:90px;border-radius:10px;background:rgba(244,241,234,.08)"></div>
+          <div style="flex:1"><div style="height:16px;width:80%;background:rgba(244,241,234,.18);border-radius:8px"></div><div style="height:12px;width:60%;background:var(--line);border-radius:6px;margin-top:14px"></div><div style="height:12px;width:70%;background:var(--line);border-radius:6px;margin-top:10px"></div></div></div>`).join('')}
+      </div></div>
+    <div class="abs" style="left:100px;top:170px;width:560px">
+      <div class="kicker" style="font-size:20px">Web and content</div>
+      <div class="serif" style="font-size:120px;line-height:.95;margin-top:26px">Website,<br/>intranet,<br/>blogs, labels</div>
+      <div style="font-size:28px;color:var(--mute);margin-top:36px">SEO · monthly sales · product labels</div>
+    </div>` },
+  'cover-ai': { w: 1500, h: 1000, out: 'covers/ai.jpg', html: () => `
+    <div class="abs" style="inset:0;background:#121517"></div>
+    ${swatches({ x: 0, y: 560, w: 1500, h: 440, cols: 48, rows: 10, seed: 7 })}
+    <div class="abs" style="left:0;right:0;top:520px;height:120px;background:linear-gradient(#121517,transparent)"></div>
+    <div class="abs" style="left:100px;top:110px;width:1300px">
+      <div class="kicker" style="font-size:20px">AI production · workflow automation</div>
+      <div style="display:flex;align-items:flex-end;gap:40px;margin-top:20px">
+        <div class="serif big" style="font-size:250px">1,921</div>
+        <div style="font-size:34px;color:var(--mute);line-height:1.35;padding-bottom:30px">colours turned into<br/>4K palette videos</div>
+      </div>
+      <div style="display:flex;gap:14px;margin-top:34px">
+        <span class="chip" style="font-size:24px"><img src="${L('claude-ai')}" style="width:28px"/>Claude Code</span>
+        <span class="chip" style="font-size:24px">Canva</span>
+        <span class="chip" style="font-size:24px"><img src="${L('chatgpt')}" style="width:28px;border-radius:6px"/>ChatGPT</span>
+        <span class="chip" style="font-size:24px">Gemini</span></div>
+    </div>` },
+  'cover-agency': { w: 1500, h: 1000, out: 'covers/agency.jpg', html: () => `
+    <div class="abs" style="inset:0;background:radial-gradient(80% 90% at 75% 40%, #23292d, var(--ink) 70%)"></div>
+    <div class="abs card" style="left:780px;top:130px;width:300px;height:330px;background:#fff;display:grid;place-items:center;transform:rotate(-5deg)"><img class="logo" src="${L('jaalik')}" style="width:210px"/></div>
+    <div class="abs card" style="left:1110px;top:220px;width:300px;height:140px;background:#1e2a3a;display:grid;place-items:center;transform:rotate(4deg)"><img class="logo" src="${L('reframes')}" style="width:240px"/></div>
+    <div class="abs card" style="left:880px;top:560px;width:480px;height:290px;background:#e7e4dd;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transform:rotate(3deg)">
+      <img class="logo" src="${L('boopdog')}" style="width:150px"/><img class="logo" src="${L('boopdog_original')}" style="width:230px"/></div>
+    <div class="abs" style="left:100px;top:170px;width:600px">
+      <div class="kicker" style="font-size:20px">Since 2022</div>
+      <div class="serif" style="font-size:128px;line-height:.95;margin-top:26px">Agency<br/>and clients</div>
+      <div style="font-size:28px;color:var(--mute);margin-top:36px;line-height:1.4">Paid social, content, Shopify<br/>and Instagram for small brands</div>
+    </div>` },
+
+  // ===== case banners (2400 x 900, key content kept in the middle) =====
+  'coty-vancouver': { w: 2400, h: 900, out: 'coty-vancouver/banner.jpg', html: () => `
+    <div class="abs" style="inset:0;background:radial-gradient(60% 90% at 30% 80%, #2b3034, var(--ink))"></div>
+    ${fan({ x: 520, y: 820, len: 560, width: 84, from: -14, step: 11 })}
+    <div class="abs" style="left:1160px;top:220px">
+      <div class="kicker" style="font-size:22px">Colour edit booth · Vancouver</div>
+      <div class="serif big" style="font-size:250px;margin-top:16px">1,000+</div>
+      <div style="font-size:32px;color:var(--mute);margin-top:40px">designers and clients picking colours together</div></div>` },
+  'coty-toronto': { w: 2400, h: 900, out: 'coty-toronto/banner.jpg', html: () => `
+    <div class="abs" style="inset:0;background:linear-gradient(120deg,#171b1e,#22282c)"></div>
+    <div class="abs" style="left:650px;top:180px;width:1100px;height:540px;border-radius:30px;background:var(--cream);color:var(--ink);display:flex;box-shadow:0 40px 120px rgba(0,0,0,.55)">
+      <div style="flex:1;padding:56px 60px;border-right:3px dashed #c9c3b5">
+        <div style="font:600 20px Inter;letter-spacing:.3em;color:#7b756a">ON-SITE LAUNCH</div>
+        <div style="display:flex;align-items:center;gap:40px;margin-top:40px;font:800 120px Inter;letter-spacing:-.03em">YVR <span style="font-size:70px;color:var(--f7)">✈</span> YYZ</div>
+        <div style="display:flex;gap:70px;margin-top:46px;font:500 22px Inter;color:#7b756a">
+          <div>EVENT<div style="font:700 30px Inter;color:var(--ink);margin-top:8px">Colour of the Year 2027</div></div>
+          <div>ROLE<div style="font:700 30px Inter;color:var(--ink);margin-top:8px">Ran it on site</div></div></div>
+      </div>
+      <div style="width:360px;padding:56px 40px;display:flex;flex-direction:column;justify-content:space-between">
+        <div style="font:600 20px Inter;letter-spacing:.3em;color:#7b756a">TORONTO</div>
+        <div><div class="serif" style="font-size:104px;line-height:.9">1,500+</div><div style="font:500 24px Inter;color:#7b756a;margin-top:10px">attendees</div></div>
+      </div></div>
+    ${fan({ x: 1760, y: 820, len: 560, width: 70, from: -10, step: 10, op: .9 })}` },
+  'canadian-by-canadian': { w: 2400, h: 900, out: 'canadian-by-canadian/banner.jpg', html: () => `
+    <div class="abs" style="inset:0;background:var(--cream)"></div>
+    <div class="abs" style="left:0;top:0;width:400px;height:900px;background:var(--f7)"></div>
+    <div class="abs" style="right:0;top:0;width:400px;height:900px;background:var(--f7)"></div>
+    <div class="center" style="flex-direction:column;color:var(--ink)">
+      <div style="font:600 22px Inter;letter-spacing:.34em;color:#8a8376">A BUY-CANADIAN CAMPAIGN</div>
+      <div class="serif" style="font-size:150px;line-height:.9;margin-top:24px;text-align:center">Canadian <span class="hand" style="font-size:96px;color:var(--f7)">by</span> Canadian</div>
+      <div style="font:500 28px Inter;color:#5e584e;margin-top:34px;text-align:center;line-height:1.45">Canadian businesses featured on Cloverdale's site and socials<br/>reaching people outside the paint industry</div>
+    </div>` },
+  'made-in-canada': { w: 2400, h: 900, out: 'made-in-canada/banner.jpg', html: () => `
+    <div class="abs" style="inset:0;background:linear-gradient(160deg,#1b1f22,#121517)"></div>
+    ${calendar({ x: 1360, y: 120, cell: 104, gap: 14, start: 0 })}
+    <div class="abs" style="left:440px;top:230px;width:860px">
+      <div class="kicker" style="font-size:22px">November 2026</div>
+      <div class="serif" style="font-size:112px;line-height:.95;margin-top:20px">30 Days of<br/>Made in Canada</div>
+      <div style="font-size:30px;color:var(--mute);margin-top:34px">30 Canadian businesses · one a day · web and social</div></div>` },
+  'bcaa': { w: 2400, h: 900, out: 'bcaa/banner.jpg', html: () => `
+    <div class="abs" style="inset:0;background:radial-gradient(70% 100% at 60% 50%, #243039, var(--ink))"></div>
+    <div class="abs card" style="left:1280px;top:90px;width:520px;height:720px;padding:30px;background:#f7f5f0;color:#333">
+      <div style="height:44px;width:180px;border-radius:8px;background:#1f3a5f"></div>
+      <div style="height:220px;border-radius:12px;margin-top:24px;background:repeating-linear-gradient(45deg,#e3e0d8,#e3e0d8 14px,#ece9e2 14px,#ece9e2 28px);display:grid;place-items:center;font:600 18px Inter;color:#8a8376;letter-spacing:.2em">HERO IMAGE</div>
+      <div style="font:800 40px Inter;margin-top:28px;color:#1f3a5f">Fan Club VIP</div>
+      <div style="height:12px;width:90%;background:#d9d5cc;border-radius:6px;margin-top:20px"></div><div style="height:12px;width:75%;background:#d9d5cc;border-radius:6px;margin-top:12px"></div>
+      <div style="margin-top:36px;display:inline-block;padding:18px 40px;border-radius:999px;background:var(--f7);color:#fff;font:700 22px Inter">Sign up</div>
+      <div style="display:flex;gap:14px;margin-top:40px">${[0, 1, 2].map(() => '<div style="flex:1;height:70px;border-radius:10px;border:2px dashed #cfcabf"></div>').join('')}</div>
+    </div>
+    <div class="abs" style="left:560px;top:230px;width:660px">
+      <div class="kicker" style="font-size:22px">Partnership · BCAA</div>
+      <div class="serif" style="font-size:140px;line-height:.92;margin-top:20px">Fan Club<br/>VIP</div>
+      <div style="font-size:30px;color:var(--mute);margin-top:30px;line-height:1.4">Member email wireframe and<br/>sign-up campaigns</div></div>` },
+  'social-growth': { w: 2400, h: 900, out: 'social-growth/banner.jpg', html: () => `
+    <div class="abs" style="inset:0;background:radial-gradient(60% 100% at 50% 100%, #3a2633, var(--ink))"></div>
+    <svg class="abs" style="left:0;top:0" width="2400" height="900"><path opacity=".55" d="M380 820 C 900 740, 1200 650, 1500 470 S 1900 160, 2050 110" stroke="url(#g)" stroke-width="10" fill="none" stroke-linecap="round"/>
+      <defs><linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="#feda75"/><stop offset=".4" stop-color="#d62976"/><stop offset="1" stop-color="#4f5bd5"/></linearGradient></defs></svg>
+    <div class="center" style="flex-direction:column">
+      <div class="kicker" style="font-size:22px">Instagram + Facebook</div>
+      <div class="serif big" style="font-size:330px;margin-top:10px">348%</div>
+      <div style="font-size:30px;color:var(--mute);margin-top:44px">growth with original, trend-based video, carousel and meme content</div></div>
+    <img class="abs logo" src="${L('instagram')}" style="left:640px;top:200px;width:110px;transform:rotate(-10deg)"/>
+    <img class="abs logo" src="${L('facebook')}" style="left:1680px;top:520px;width:100px;transform:rotate(8deg)"/>` },
+  'top-reels': { w: 2400, h: 900, out: 'top-reels/banner.jpg', html: () => {
+    const f = (label, n, bg) => `<div style="position:absolute;inset:0;background:${bg}"></div>
+      <div style="position:absolute;left:0;right:0;top:44%;text-align:center;font:700 60px Inter;color:#fff;opacity:.9">▶</div>
+      <div style="position:absolute;left:22px;bottom:70px;font:700 22px Inter;color:#fff">${label}</div>
+      <div style="position:absolute;left:22px;bottom:36px;font:500 18px Inter;color:#fff;opacity:.8">${n}</div>`
+    return `<div class="abs" style="inset:0;background:linear-gradient(180deg,#191d20,#101315)"></div>
+      ${phone({ x: 760, y: 140, w: 280, rot: -6, inner: f('Reel', 'video', 'linear-gradient(160deg,#3a4a5a,#1e252b)') })}
+      ${phone({ x: 1060, y: 90, w: 300, inner: f('Carousel', 'swipe', 'linear-gradient(160deg,#6f906f,#2d3b2d)') })}
+      ${phone({ x: 1380, y: 140, w: 280, rot: 6, inner: f('Meme', 'retail humour', 'linear-gradient(160deg,#a9665a,#3a2622)') })}
+      <div class="abs" style="left:300px;top:330px;width:420px"><div class="kicker" style="font-size:22px">Top posts</div>
+        <div class="serif" style="font-size:120px;line-height:.95;margin-top:16px">50K to<br/>100K+</div><div style="font-size:28px;color:var(--mute);margin-top:20px">views</div></div>` } },
+  'linkedin-pages': { w: 2400, h: 900, out: 'linkedin-pages/banner.jpg', html: () => `
+    <div class="abs" style="inset:0;background:linear-gradient(180deg,#14212c,#101418)"></div>
+    ${['Industrial', 'Corporate', 'Specifier and designer'].map((t, i) => `<div class="abs card" style="left:${600 + i * 420}px;top:${250 + (i % 2) * 40}px;width:380px;height:300px;padding:40px">
+      <img class="logo" src="${L('linkedin')}" style="width:70px"/><div style="font:700 34px Inter;margin-top:40px">${t}</div><div style="font:500 22px Inter;color:var(--mute);margin-top:10px">Cloverdale Paint page</div></div>`).join('')}
+    <div class="abs" style="left:0;right:0;top:640px;text-align:center"><span class="serif" style="font-size:96px">~12,000</span><span style="font-size:30px;color:var(--mute);margin-left:22px">combined followers</span></div>` },
+  'dealer-campaigns': { w: 2400, h: 900, out: 'dealer-campaigns/banner.jpg', html: () => `
+    <div class="abs" style="inset:0;background:#111518"></div>${mapGrid()}
+    ${pin({ x: 1500, y: 330, r: 200 })}${pin({ x: 1880, y: 560, r: 130, c: 'var(--f2)' })}${pin({ x: 1180, y: 640, r: 100, c: 'var(--f4)' })}${pin({ x: 560, y: 260, r: 80, c: 'var(--f6)' })}
+    <div class="abs" style="left:560px;top:330px;width:700px">
+      <div class="kicker" style="font-size:22px">Authorized dealers across Canada</div>
+      <div class="serif" style="font-size:112px;line-height:1;margin-top:16px">Geofenced<br/>dealer ads</div>
+      <div style="display:flex;gap:12px;margin-top:26px"><span class="chip" style="font-size:22px">Location</span><span class="chip" style="font-size:22px">Age</span><span class="chip" style="font-size:22px">Job title</span><span class="chip" style="font-size:22px">~$2,000</span></div></div>` },
+  'global-building-supplies': { w: 2400, h: 900, out: 'global-building-supplies/banner.jpg', html: () => `
+    <div class="abs" style="inset:0;background:radial-gradient(70% 100% at 50% 50%, #2a2321, var(--ink))"></div>
+    <div class="center" style="flex-direction:column">
+      <div class="kicker" style="font-size:22px">Largest dealer in Ontario's Chinese community</div>
+      <div style="display:flex;align-items:flex-end;gap:26px;margin-top:20px"><span class="serif big" style="font-size:300px">$500</span><span style="font-size:44px;color:var(--mute);padding-bottom:40px">/ month</span></div>
+      <div style="font-size:30px;color:var(--mute);margin-top:40px">Brand awareness · the dealer is the hero, Cloverdale is the choice</div></div>
+    ${fan({ x: 1780, y: 840, len: 520, width: 64, from: -12, step: 10, op: .85 })}` },
+  'reputation': { w: 2400, h: 900, out: 'reputation/banner.jpg', html: () => `
+    <div class="abs" style="inset:0;background:linear-gradient(180deg,#1a1e21,#121517)"></div>
+    ${Array.from({ length: 8 }).map((_, i) => `<div class="abs card" style="left:${300 + (i % 4) * 470}px;top:${80 + Math.floor(i / 4) * 470}px;width:420px;height:300px;padding:32px;opacity:.28">
+      <div class="star" style="font-size:30px">${i === 5 ? '★<span style="color:var(--mute)">☆☆☆☆</span>' : '★★★★★'}</div>
+      <div style="height:12px;width:300px;background:var(--line);border-radius:6px;margin-top:24px"></div><div style="height:12px;width:240px;background:var(--line);border-radius:6px;margin-top:12px"></div>
+      <div style="margin-top:34px;padding:16px;border-left:3px solid var(--peach);font:500 18px Inter;color:var(--mute)">Reply from Cloverdale Paint</div></div>`).join('')}
+    <div class="center" style="flex-direction:column;background:radial-gradient(34% 55% at 50% 50%, rgba(18,21,23,.97), rgba(18,21,23,.4) 80%, transparent)">
+      <div class="kicker" style="font-size:22px">82 store locations</div>
+      <div class="serif big" style="font-size:250px;margin-top:10px">80–150</div>
+      <div style="font-size:30px;color:var(--mute);margin-top:40px">Google reviews handled every week</div></div>` },
+  'feedback-to-content': { w: 2400, h: 900, out: 'feedback-to-content/banner.jpg', html: () => `
+    <div class="abs" style="inset:0;background:linear-gradient(120deg,#1a1d20,#23201c)"></div>
+    <div class="abs card" style="left:560px;top:250px;width:520px;height:330px;padding:40px">
+      <div class="star" style="font-size:34px">★<span style="color:var(--mute)">☆☆☆☆</span></div>
+      <div style="height:14px;width:400px;background:var(--line);border-radius:7px;margin-top:30px"></div><div style="height:14px;width:330px;background:var(--line);border-radius:7px;margin-top:14px"></div>
+      <div style="font:500 22px Inter;color:var(--mute);margin-top:40px">Negative feedback on a product launch</div></div>
+    <div class="abs hand" style="left:1120px;top:330px;font-size:120px;color:var(--peach)">→</div>
+    <div class="abs" style="left:1300px;top:170px;width:520px;height:560px;border-radius:26px;background:var(--cream);color:var(--ink);padding:40px;box-shadow:0 40px 100px rgba(0,0,0,.5)">
+      <div style="height:300px;border-radius:16px;background:linear-gradient(90deg,var(--f1),var(--f2),var(--f3),var(--f5),var(--f6),var(--f7))"></div>
+      <div style="font:800 40px Inter;margin-top:30px">New post</div><div style="font:500 22px Inter;color:#7b756a;margin-top:10px">The feedback became the story</div></div>` },
+  'web-content': { w: 2400, h: 900, out: 'web-content/banner.jpg', html: () => `
+    <div class="abs" style="inset:0;background:radial-gradient(70% 100% at 60% 50%, #22302a, var(--ink))"></div>
+    ${['Website', 'Intranet', 'SEO blog', 'Monthly sale', 'Product label'].map((t, i) => `<div class="abs card" style="left:${420 + i * 320}px;top:${260 + (i % 2) * 50}px;width:290px;height:400px;padding:28px">
+      <div style="height:170px;border-radius:12px;background:${['var(--f2)', 'var(--sage)', 'var(--f4)', 'var(--f7)', 'var(--f5)'][i]};opacity:.85"></div>
+      <div style="font:700 28px Inter;margin-top:26px">${t}</div>
+      <div style="height:10px;width:80%;background:var(--line);border-radius:5px;margin-top:18px"></div><div style="height:10px;width:60%;background:var(--line);border-radius:5px;margin-top:10px"></div></div>`).join('')}
+    <div class="abs" style="left:0;right:0;top:150px;text-align:center"><span class="kicker" style="font-size:22px">Everything Cloverdale publishes, kept current</span></div>` },
+  'ai-automation': { w: 2400, h: 900, out: 'ai-automation/banner.jpg', html: () => {
+    const box = (x, t, s) => `<div class="abs card" style="left:${x}px;top:330px;width:300px;height:200px;padding:30px"><div style="font:700 30px Inter">${t}</div><div style="font:500 20px Inter;color:var(--mute);margin-top:12px">${s}</div></div>`
+    const arr = (x) => `<div class="abs" style="left:${x}px;top:395px;font:300 60px Inter;color:var(--peach)">→</div>`
+    return `<div class="abs" style="inset:0;background:#121517"></div>
+      ${swatches({ x: 0, y: 640, w: 2400, h: 260, cols: 80, rows: 6, seed: 3 })}
+      ${swatches({ x: 0, y: 0, w: 2400, h: 120, cols: 80, rows: 3, seed: 11 })}
+      ${box(470, 'Colour database', '1,921 colours, CSV')}${arr(800)}${box(870, 'Claude Code', 'reads, groups, writes')}${arr(1200)}${box(1270, 'Canva template', 'fills each scene')}${arr(1600)}${box(1670, '4K video', 'palette per topic')}
+      <div class="abs" style="left:0;right:0;top:190px;text-align:center"><span class="kicker" style="font-size:22px">Built by TJ · workflow automation</span></div>` } },
+  'ai-content': { w: 2400, h: 900, out: 'ai-content/banner.jpg', html: () => `
+    <div class="abs" style="inset:0;background:radial-gradient(60% 100% at 50% 50%, #2a2733, var(--ink))"></div>
+    <div class="center" style="flex-direction:column">
+      <div class="kicker" style="font-size:22px">From brief to finished asset</div>
+      <div class="serif" style="font-size:150px;line-height:.95;margin-top:16px;text-align:center">AI built into<br/>the workflow</div>
+      <div style="display:flex;gap:16px;margin-top:40px">
+        <span class="chip" style="font-size:26px"><img src="${L('chatgpt')}" style="width:32px;border-radius:7px"/>ChatGPT</span>
+        <span class="chip" style="font-size:26px"><img src="${L('claude-ai')}" style="width:32px"/>Claude</span>
+        <span class="chip" style="font-size:26px">Gemini</span><span class="chip" style="font-size:26px">Higgsfield</span><span class="chip" style="font-size:26px">ElevenLabs</span><span class="chip" style="font-size:26px">Canva</span></div></div>` },
+  'jaalik-reframes': { w: 2400, h: 900, out: 'jaalik-reframes/banner.jpg', html: () => `
+    <div class="abs" style="inset:0;background:linear-gradient(120deg,#13202e,#171a1d)"></div>
+    <div class="abs card" style="left:620px;top:200px;width:420px;height:470px;background:#fff;display:grid;place-items:center"><img class="logo" src="${L('jaalik')}" style="width:290px"/></div>
+    <div class="abs serif" style="left:1100px;top:330px;font-size:150px;color:var(--peach)">×</div>
+    <div class="abs card" style="left:1260px;top:330px;width:520px;height:190px;background:#1e2a3a;display:grid;place-items:center"><img class="logo" src="${L('reframes')}" style="width:420px"/></div>
+    <div class="abs" style="left:1260px;top:570px;display:flex;gap:12px;flex-wrap:wrap;width:560px"><span class="chip" style="font-size:22px">Meta ads</span><span class="chip" style="font-size:22px">TikTok ads</span><span class="chip" style="font-size:22px">Shopify</span><span class="chip" style="font-size:22px">A/B creative</span></div>` },
+  'boopdog': { w: 2400, h: 900, out: 'boopdog/banner.jpg', html: () => `
+    <div class="abs" style="inset:0;background:#e7e4dd"></div>
+    <div class="abs" style="left:0;top:0;width:2400px;height:900px;background:radial-gradient(50% 80% at 50% 50%, #f3f1ec, #dcd8cf)"></div>
+    <div class="center" style="flex-direction:column;color:var(--ink)">
+      <img class="logo" src="${L('boopdog')}" style="width:250px"/>
+      <img class="logo" src="${L('boopdog_original')}" style="width:420px;margin-top:30px;mix-blend-mode:multiply"/>
+      <div style="font:500 30px Inter;color:#6b665c;margin-top:36px">Social media manager · Instagram strategy, content calendar, publishing</div></div>
+    <img class="abs logo" src="${L('instagram')}" style="left:1640px;top:180px;width:120px;transform:rotate(10deg)"/>` },
+}
+
+const id = decodeURIComponent(location.hash.slice(1)) || 'cover-events'
+const d = DESIGNS[id]
+document.getElementById('art').innerHTML = d ? d.html() : `<div class="center">Unknown id ${id}</div>`
+window.__DESIGNS = Object.fromEntries(Object.entries(DESIGNS).map(([k, v]) => [k, { w: v.w, h: v.h, out: v.out }]))
+window.__READY = document.fonts.ready.then(() => Promise.all([...document.images].map(i => i.complete ? 0 : new Promise(r => { i.onload = i.onerror = r }))))
+</script>
+</body>
+</html>
